@@ -1,0 +1,53 @@
+@page "/fetchdata"
+@using BlazorApp1.Shared
+@inject HttpClient Http
+@*Lo que hicimos arriba fue inyectar el servicio HttpClient en una variable Http*@
+<h1>Weather forecast</h1>
+
+<p>This component demonstrates fetching data from the server.</p>
+
+@if (forecasts == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Temp. (C)</th>
+                <th>Temp. (F)</th>
+                <th>Summary</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var forecast in forecasts)
+            {
+                <tr>
+                    <td>@forecast.Date.ToShortDateString()</td>
+                    <td>@forecast.TemperatureC</td>
+                    <td>@forecast.TemperatureF</td>
+                    <td>@forecast.Summary</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private WeatherForecast[] forecasts;
+
+    protected override async Task OnInitializedAsync()
+    {
+        //Lo que hace el metodo GetFromJsonAsync: es que envia una peticion http get hacia el servidor
+        //Y el resultado lo deserealiza en WeatherForecast
+        //El cual es una clase que tenemos en el proyecto SHARED
+        // (wheat...) = es el parametro. El cual es un controlador llamado WeatherForecast que se encuentra en la carpeta 
+        //controller en Blazor.Server
+        forecasts = await Http.GetFromJsonAsync<WeatherForecast[]>("WeatherForecast");
+        //Hay un metodo que es el " Http.GetAsync() " el cual se diferencia con el de arriba, en que este método trae todo
+        //asi haya errores, trae todo
+    }
+
+}

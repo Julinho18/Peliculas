@@ -1,0 +1,45 @@
+﻿@page "/peliculas/crear"
+@inject NavigationManager navigationManager
+@inject IRepositorio repositorio
+@inject IMostrarMensajes mostradorMensajes
+@attribute [Authorize(Roles = "admin")]
+
+@if (MostrarFormulario)
+{
+    <FormularioPeliculas Pelicula="Pelicula" OnValidSubmit="Crear"
+                         GenerosNoSeleccionados="GenerosNoSeleccionados"></FormularioPeliculas>
+}
+else
+{
+    <text>Cargando...</text>
+}
+
+@code {
+    private bool MostrarFormulario { get; set; } = false;
+    private Pelicula Pelicula = new Pelicula();
+    private List<Genero> GenerosNoSeleccionados = new List<Genero>();
+
+    protected async override Task OnInitializedAsync()
+    {
+        var responseHttp = await repositorio.Get<List<Genero>>("api/generos");
+        GenerosNoSeleccionados = responseHttp.Response; // con esto tendremos el listado de genero en esta propiedad
+        MostrarFormulario = true;
+    }
+    async Task Crear()
+    {
+        var httpResponse = await repositorio.Post<Pelicula, int>("api/peliculas", Pelicula);
+        if (httpResponse.Error)
+        {
+            var mensajeError = await httpResponse.GetBody();
+            await mostradorMensajes.MostrarMensajeError(mensajeError);
+        }
+        else
+        {//se coloca la ruta de visulizar pelicula
+         //Para el Id se utiliza un metodo post que se crea en Irepositorio
+
+            var PeliculaId = httpResponse.Response;
+            navigationManager.NavigateTo($"/pelicula/{PeliculaId}/{Pelicula.Titulo.Replace(" ", " ")}");
+        }
+    }
+
+}

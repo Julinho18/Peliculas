@@ -1,0 +1,34 @@
+﻿@page "/generos/crear"
+@inject IRepositorio repositorio
+@inject NavigationManager navigationManager
+@inject IMostrarMensajes mostrarMensajes
+@attribute [Authorize(Roles = "admin")]
+
+
+<h3>CrearGenero</h3>
+
+<FormularioGenero OnValidSubmit="Crear" Genero="Genero"></FormularioGenero>
+
+@code {
+    private Genero Genero = new Genero();
+    private async Task Crear() //se cambio este metodo a uno asincrono
+    {//vamos a utilizar nuestro repositorio para poder crear el genero
+
+        //la direccion api/generos, es la direccion del generoController
+        var httpResponse = await repositorio.Post("api/generos", Genero); //le estamos mandando a esa direccion, el valor genero
+
+        if (httpResponse.Error)
+        {//lo siguiente que se guarda en esa variable es el error
+            var body = await httpResponse.GetBody();
+            await mostrarMensajes.MostrarMensajeError(body);
+        }
+        else
+        {//Si todo esta OK entonces mandamos a que se diriga a la pagina /generos
+            navigationManager.NavigateTo("/generos");
+        }
+
+        Console.WriteLine("Ejecutando el método crear");
+        Console.WriteLine($"Nombre del género: {Genero.Nombre}");
+
+    }
+}
